@@ -4,8 +4,11 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-orange.svg)](https://scikit-learn.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code style: flake8](https://img.shields.io/badge/code%20style-flake8-black.svg)](https://flake8.pycqa.org/)
+[![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC.svg)](https://www.terraform.io/)
+[![AWS ECR](https://img.shields.io/badge/Registry-ECR-FF9900.svg)](https://aws.amazon.com/ecr/)
+[![SageMaker](https://img.shields.io/badge/ML-SageMaker-FF9900.svg)](https://aws.amazon.com/sagemaker/)
 
-Proyecto completo de Machine Learning para predecir la supervivencia de pasajeros del Titanic, implementando mejores prácticas de ingeniería de software, testing automatizado y CI/CD con GitHub Actions.
+Proyecto completo de Machine Learning para predecir la supervivencia de pasajeros del Titanic, con un pipeline de MLOps que integra **Docker**, **AWS ECR**, **SageMaker Processing** e **infraestructura como código con Terraform**, todo orquestado por **GitHub Actions**.
 
 > [!NOTE]
 > **🎯 Proyecto académico de práctica**: Este repositorio fue creado como ejercicio práctico para aprender CI/CD, testing y mejores prácticas en proyectos de Machine Learning.
@@ -13,16 +16,16 @@ Proyecto completo de Machine Learning para predecir la supervivencia de pasajero
 ## 📑 Tabla de Contenidos
 
 - [Características](#-características)
+- [Arquitectura del Pipeline](#-arquitectura-del-pipeline)
+- [Infraestructura con Terraform](#-infraestructura-con-terraform)
 - [Inicio Rápido](#-inicio-rápido)
-  - [Docker 🐳](#opción-1-usando-docker--recomendado)
-  - [Instalación Local](#opción-2-instalación-local)
 - [Documentación](#-documentación)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Uso Detallado](#-uso-detallado)
 - [Workflows de CI/CD](#-workflows-de-cicd)
 - [Testing](#-testing)
 - [Modelos Soportados](#-modelos-soportados)
 - [Resultados](#-resultados)
+- [🎓 Ejercicio para Alumnos](#-ejercicio-para-alumnos)
 - [Contribuir](#-contribuir)
 - [Licencia](#-licencia)
 
@@ -44,13 +47,73 @@ Proyecto completo de Machine Learning para predecir la supervivencia de pasajero
 - ✅ **Type hints** y documentación
 - ✅ **Git-friendly** con .gitignore configurado
 
-### CI/CD Automatizado
+### CI/CD y MLOps Automatizado
 
-- ✅ **Testing automático** en cada push/PR
-- ✅ **Entrenamiento programado** (semanal)
-- ✅ **Evaluación automática** después del entrenamiento
+- ✅ **Testing automático** en cada push/PR (flake8 + pytest)
+- ✅ **Docker multi-stage** con imágenes separadas para processing y training
+- ✅ **Publicación automática** de imágenes a **AWS ECR**
+- ✅ **SageMaker Processing Job** lanzado automáticamente en cada push
+- ✅ **Infraestructura como código** con Terraform (ECR, IAM roles, políticas)
 - ✅ **Artifacts** versionados (modelos, métricas, reportes)
-- ✅ **Docker** para deployment reproducible
+
+## 🏗️ Arquitectura del Pipeline
+
+```
+Push a main
+    │
+    ├─► CI (ci.yml)                    → flake8 + pytest (Python 3.9, 3.10, 3.11)
+    │
+    └─► docker-publish.yml
+            │  Construye imagen processing  ──► ECR :processing-latest
+            │  Construye imagen train       ──► ECR :train-latest
+            │
+            └─► sagemaker-pipeline.yml  (workflow_run trigger)
+                    │
+                    ├─ Lee datos crudos de S3
+                    ├─ Lanza SageMaker Processing Job
+                    │      (usa imagen processing de ECR)
+                    └─ Guarda train/val/test.csv  ──► S3
+
+                    🚧 Training Job  ← Ejercicio para alumnos
+```
+
+## ☁️ Infraestructura con Terraform
+
+Toda la infraestructura AWS se gestiona con Terraform en el directorio `terraform/`.
+
+### Recursos creados
+
+| Recurso | Nombre | Para qué sirve |
+|---|---|---|
+| `aws_ecr_repository` | `practica-ci-cd` | Almacena las imágenes Docker |
+| `aws_ecr_lifecycle_policy` | — | Mantiene solo las últimas 10 imágenes |
+| `aws_iam_user` | `github-actions-ecr-practica-ci-cd` | Usuario que usa GitHub Actions para autenticarse |
+| `aws_iam_access_key` | — | Credenciales → secretos de GitHub |
+| `aws_iam_role` | `sagemaker-execution-practica-ci-cd` | Rol que SageMaker asume al correr jobs |
+| `aws_iam_role_policy` | `sagemaker-s3-policy` | Acceso lectura/escritura al bucket S3 |
+| `aws_iam_role_policy` | `sagemaker-ecr-policy` | Pull de imágenes desde ECR |
+
+### Cómo se conecta Terraform con el pipeline
+
+```
+Terraform                     GitHub Actions
+──────────────────────────    ──────────────────────────────────────
+Crea aws_iam_user         →   usa AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+Crea aws_ecr_repository   →   docker-publish.yml sube imágenes aquí
+Crea aws_iam_role         →   sagemaker-pipeline.yml pasa el ARN al job
+```
+
+### Aplicar la infraestructura
+
+```bash
+cd terraform/
+terraform init
+terraform apply        # Crea todos los recursos en AWS
+terraform output       # Muestra URLs, ARNs y credenciales
+```
+
+> [!IMPORTANT]
+> Después del primer `terraform apply`, copia los outputs `aws_access_key_id` y `aws_secret_access_key` y agrégalos como **Secrets** en GitHub → Settings → Secrets and variables → Actions.
 
 ## 🚀 Inicio Rápido
 
@@ -138,7 +201,8 @@ Documentación detallada de cada componente:
 - [🔄 CI Workflow](docs/ci-cd/WORKFLOW_CI.md) - Testing y linting automático
 - [🚂 Train Workflow](docs/ci-cd/WORKFLOW_TRAIN.md) - Entrenamiento automático
 - [📈 Evaluate Workflow](docs/ci-cd/WORKFLOW_EVALUATE.md) - Evaluación automática
-- [🐳 Docker Workflow](docs/ci-cd/WORKFLOW_DOCKER.md) - Build y publicación de imágenes Docker
+- [🐳 Docker Workflow](docs/ci-cd/WORKFLOW_DOCKER.md) - Build y publicación de imágenes a ECR
+- [🔬 SageMaker Pipeline](docs/ci-cd/WORKFLOW_SAGEMAKER.md) - Processing Job en AWS SageMaker
 
 ### Documentación de Docker
 
@@ -160,19 +224,29 @@ practica_ci_cd/
 │
 ├── 📁 .github/workflows/        # GitHub Actions
 │   ├── ci.yml                  # Testing y linting automático
-│   ├── train-model.yml         # Entrenamiento automático
+│   ├── docker-publish.yml      # Build y push de imágenes a ECR
+│   ├── sagemaker-pipeline.yml  # Lanza SageMaker Processing Job
+│   ├── train-model.yml         # Entrenamiento automático (local)
 │   └── evaluate-model.yml      # Evaluación automática
+│
+├── 📁 terraform/                # Infraestructura como código (IaC)
+│   ├── main.tf                 # ECR repo + IAM user para GitHub Actions
+│   ├── sagemaker_role.tf       # IAM Role para SageMaker + permisos
+│   ├── variables.tf            # Variables (región, nombre del repo)
+│   └── outputs.tf              # URLs, ARNs y credenciales
 │
 ├── 📁 src/                      # Código fuente principal
 │   ├── data_loader.py          # Carga de datos
 │   ├── preprocessing.py        # Preprocesamiento y feature engineering
+│   ├── process.py              # Entrypoint SageMaker Processing Job
 │   ├── model.py                # Definición de modelos
-│   ├── train.py                # Script de entrenamiento
+│   ├── train.py                # Entrypoint SageMaker Training Job (🚧)
 │   └── evaluate.py             # Script de evaluación
 │
 ├── 📁 scripts/                  # Scripts de utilidad
 │   ├── download_data.py        # Descarga del dataset
-│   └── run_pipeline.py         # Pipeline end-to-end
+│   ├── launch_processing_job.py # Lanza job via boto3
+│   └── run_pipeline.py         # Pipeline end-to-end (local)
 │
 ├── 📁 tests/                    # Tests unitarios
 │   ├── test_preprocessing.py   # Tests del preprocessor
@@ -236,45 +310,61 @@ python src/train.py --model gradient_boosting --cv-folds 5
 
 ## 🔄 Workflows de CI/CD
 
-### CI - Testing y Linting
+### 1. CI - Testing y Linting (`ci.yml`)
 
 **Trigger**: Push o Pull Request a `main` o `develop`
 
-```yaml
+```
 Matriz de Python: 3.9, 3.10, 3.11
 ├── Linting con flake8
-├── Tests con pytest
-├── Reporte de cobertura
+├── Tests con pytest + cobertura
 └── Upload a Codecov
 ```
 
-[📖 Documentación detallada del workflow CI](docs/ci-cd/WORKFLOW_CI.md)
+[📖 Documentación detallada](docs/ci-cd/WORKFLOW_CI.md)
 
-### Train Model - Entrenamiento Automático
+---
 
-**Trigger**: Manual o programado (domingos a las 00:00 UTC)
+### 2. Docker Build and Publish (`docker-publish.yml`)
 
-```yaml
-├── Descarga de datos
-├── Entrenamiento del modelo
-├── Guardado de artifacts (modelo + métricas)
-└── Publicación de métricas
+**Trigger**: Push a `main` o tag `v*`
+
+```
+├── Construye imagen processing  → ECR :processing-latest, :processing-<sha>
+├── Construye imagen train       → ECR :train-latest, :train-<sha>
+└── (en tags v*) imagen prod     → ECR :prod-latest
 ```
 
-[📖 Documentación detallada del workflow Train](docs/ci-cd/WORKFLOW_TRAIN.md)
+Las imágenes se publican en: `421041021233.dkr.ecr.us-east-1.amazonaws.com/practica-ci-cd`
 
-### Evaluate Model - Evaluación Automática
+[📖 Documentación detallada](docs/ci-cd/WORKFLOW_DOCKER.md)
 
-**Trigger**: Después de entrenamiento exitoso o manual
+---
 
-```yaml
-├── Carga del modelo entrenado
-├── Evaluación en conjunto de test
-├── Generación de visualizaciones
-└── Comentario automático en PR (si aplica)
+### 3. SageMaker Processing Pipeline (`sagemaker-pipeline.yml`)
+
+**Trigger**: Automático cuando `docker-publish.yml` termina exitosamente en `main`
+
+```
+├── Login a ECR
+├── Lanza SageMaker Processing Job
+│     ├── Imagen: ECR :processing-latest
+│     ├── Input:  s3://practica.mlops.2026/ejemplo.studio/
+│     └── Output: s3://practica.mlops.2026/ejemplo.studio/processed/
+└── Espera que el job complete (~5-10 min)
 ```
 
-[📖 Documentación detallada del workflow Evaluate](docs/ci-cd/WORKFLOW_EVALUATE.md)
+[📖 Documentación detallada](docs/ci-cd/WORKFLOW_SAGEMAKER.md)
+
+---
+
+### 4. Train Model / Evaluate Model
+
+**Trigger**: Manual o programado
+
+Workflows de CI/CD locales (sin SageMaker) para pruebas rápidas.
+
+[📖 Train](docs/ci-cd/WORKFLOW_TRAIN.md) | [📖 Evaluate](docs/ci-cd/WORKFLOW_EVALUATE.md)
 
 ## 🧪 Testing
 
@@ -385,13 +475,47 @@ El proyecto genera automáticamente:
 - **pytest-cov** - Cobertura de código
 - **flake8** - Linting
 
-### CI/CD
+### CI/CD e Infraestructura
 
-- **GitHub Actions** - Automatización
+- **GitHub Actions** - Orquestación de workflows
+- **Docker** - Contenerización multi-stage
+- **Terraform** - Infraestructura como código (IaC)
+- **AWS ECR** - Registro de imágenes Docker
+- **AWS SageMaker** - Processing Jobs en la nube
+- **AWS IAM** - Gestión de permisos
+- **boto3** - SDK de AWS para Python
 
 ### Otros
 
 - **joblib** - Serialización de modelos
+
+## 🎓 Ejercicio para Alumnos
+
+> [!IMPORTANT]
+> Esta sección describe la parte **pendiente** que deberás completar como ejercicio.
+
+El pipeline actual procesa los datos con SageMaker y los deja listos en S3. El siguiente paso es **lanzar un SageMaker Training Job** que tome esos datos procesados y entrene el modelo.
+
+### Lo que tienes disponible
+
+- ✅ Imagen Docker `train-latest` ya publicada en ECR
+- ✅ Script `src/train.py` como entrypoint del contenedor
+- ✅ Datos procesados en `s3://practica.mlops.2026/ejemplo.studio/processed/`
+- ✅ IAM Role `sagemaker-execution-practica-ci-cd` con los permisos necesarios
+
+### Tu tarea
+
+1. **Crear `scripts/launch_training_job.py`** — similar a `launch_processing_job.py` pero usando `boto3` con `create_training_job()`. El job debe:
+   - Leer los CSVs procesados de S3 (`/opt/ml/input/data/train/`)
+   - Guardar el modelo entrenado en S3 (`/opt/ml/model/`)
+
+2. **Agregar un paso en `sagemaker-pipeline.yml`** para lanzar el Training Job después del Processing Job.
+
+### Recursos útiles
+
+- [boto3 SageMaker Training Job docs](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_training_job.html)
+- Script de referencia: [`scripts/launch_processing_job.py`](scripts/launch_processing_job.py)
+- Workflow de referencia: [`.github/workflows/sagemaker-pipeline.yml`](.github/workflows/sagemaker-pipeline.yml)
 
 ## 🤝 Contribuir
 
