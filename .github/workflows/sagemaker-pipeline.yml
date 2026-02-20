@@ -12,6 +12,7 @@ env:
   ECR_REPOSITORY: practica-ci-cd
   S3_INPUT: s3://practica.mlops.2026/ejemplo.studio/
   S3_OUTPUT: s3://practica.mlops.2026/ejemplo.studio/processed/
+  SAGEMAKER_ROLE_ARN: arn:aws:iam::421041021233:role/sagemaker-execution-practica-ci-cd
 
 jobs:
   run-processing-job:
@@ -43,21 +44,12 @@ jobs:
       - name: Install boto3
         run: pip install boto3
 
-      - name: Get SageMaker execution role ARN
-        id: get-role
-        run: |
-          ROLE_ARN=$(aws iam get-role \
-            --role-name sagemaker-execution-practica-ci-cd \
-            --query 'Role.Arn' --output text)
-          echo "role_arn=$ROLE_ARN" >> $GITHUB_OUTPUT
-          echo "Role ARN: $ROLE_ARN"
-
       - name: Launch SageMaker Processing Job
         id: processing
         run: |
           python scripts/launch_processing_job.py \
             --image ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:processing-latest \
-            --role ${{ steps.get-role.outputs.role_arn }} \
+            --role ${{ env.SAGEMAKER_ROLE_ARN }} \
             --input-s3 ${{ env.S3_INPUT }} \
             --output-s3 ${{ env.S3_OUTPUT }} \
             --instance-type ml.t3.medium
