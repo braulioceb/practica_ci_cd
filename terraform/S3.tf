@@ -88,6 +88,7 @@ resource "aws_iam_access_key" "github_actions" {
 # Crear estructura de carpetas en S3
 # ─────────────────────────────────────────────
 
+
 # Carpeta: ejemplo.studio/
 resource "aws_s3_object" "folder_ejemplo_studio" {
   bucket  = aws_s3_bucket.app_bucket.id
