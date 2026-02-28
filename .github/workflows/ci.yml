@@ -1,10 +1,8 @@
 name: CI - Testing and Linting
 
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
 
 jobs:
   test:
@@ -38,10 +36,11 @@ jobs:
     
     - name: Lint with flake8
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings
-        flake8 src/ tests/ --count --max-line-length=100 --statistics --exit-zero
+        # Comprobar errores graves de sintaxis y nombres indefinidos
+        pylint src/ tests/ --disable=all --enable=F,E --reports=y
+
+        # Comprobar el resto del código y generar estadísticas
+        pylint src/ tests/ --max-line-length=100 --exit-zero --reports=y
     
     - name: Run tests with pytest
       run: |
