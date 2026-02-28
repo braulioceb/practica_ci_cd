@@ -20,6 +20,11 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # optional
           aws-region: us-east-1
 
+      - name: "run echo"
+      - run: 
+          echo "## Docker Build Summary 🐳" >> ${{ secrets.AWS_ACCESS_KEY_ID }}
+          echo "## Docker Build Summary 🐳" >> ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
         with:
