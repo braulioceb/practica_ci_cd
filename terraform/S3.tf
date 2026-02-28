@@ -11,6 +11,7 @@ terraform {
 
 provider "aws" {
   region  = var.aws_region
+  version = ">= 6.28.0, < 7.0.0"
 }
 
 # ─────────────────────────────────────────────
