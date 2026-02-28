@@ -59,7 +59,7 @@ Proyecto completo de Machine Learning para predecir la supervivencia de pasajero
 ## 🏗️ Arquitectura del Pipeline
 
 ```
-Push a main
+PR / Push a dev
     │
     ├─► CI (ci.yml)                    → flake8 + pytest (Python 3.9, 3.10, 3.11)
     │
@@ -76,6 +76,10 @@ Push a main
 
                     🚧 Training Job  ← Ejercicio para alumnos
 ```
+### Accuracy Gate (Requisito de la práctica)
+Durante CI se ejecuta el entrenamiento del modelo.
+Si el score usado (validación o cross-validation) es **<0.6**, el script termina con error y el workflow falla
+Esto garantiza que los modelos con **accuracy >=0.6** pasen a la etapa de despliegue 
 
 ## ☁️ Infraestructura con Terraform
 
@@ -227,7 +231,7 @@ practica_ci_cd/
 │   ├── docker-publish.yml      # Build y push de imágenes a ECR
 │   ├── sagemaker-pipeline.yml  # Lanza SageMaker Processing Job
 │   ├── train-model.yml         # Entrenamiento automático (local)
-│   └── evaluate-model.yml      # Evaluación automática
+│   └── evaluate-model.yml.disabled      # Desactivado (no se usa en la práctica)
 │
 ├── 📁 terraform/                # Infraestructura como código (IaC)
 │   ├── main.tf                 # ECR repo + IAM user para GitHub Actions
@@ -308,21 +312,42 @@ python src/train.py --model gradient_boosting --cv-folds 5
 > [!TIP]
 > Para uso avanzado y personalización, consulta [GUIA_USO.md](GUIA_USO.md)
 
+### Entrenamiento con Accuracy Gate (>=0.6)
+El entrenamiento del modelo puede ejecutarse manualmente con:
+
+```bash
+python scripts/download_data.py
+python -m src.train --model random_forest
+
+
+---
+
+#  ¿Qué se está haciendo ?
+- Documentando el requisito del PDF
+- Explicando el gate que implementaste
+- Alineando README con tu `train.py`
+- Demostrando comprensión del CI/CD
+
+---
+
 ## 🔄 Workflows de CI/CD
 
 ### 1. CI - Testing y Linting (`ci.yml`)
 
-**Trigger**: Push o Pull Request a `main` o `develop`
+**Trigger**: Push / Pull Request a `dev` (merge final a 'main' para entrega)
 
 ```
 Matriz de Python: 3.9, 3.10, 3.11
 ├── Linting con flake8
 ├── Tests con pytest + cobertura
-└── Upload a Codecov
+└── Entrenamiento/validación con gate accuracy >=0.6
 ```
 
-[📖 Documentación detallada](docs/ci-cd/WORKFLOW_CI.md)
+Además, CI ejecuta el entrenamiento del modelo para aplicar el **Accuracy Gate**:
+- Si accuracy >= 0.6, CI pasa
+- Si accuracy < 0.6, Ci falla
 
+[📖 Documentación detallada](docs/ci-cd/WORKFLOW_CI.md)
 ---
 
 ### 2. Docker Build and Publish (`docker-publish.yml`)
@@ -332,7 +357,7 @@ Matriz de Python: 3.9, 3.10, 3.11
 ```
 ├── Construye imagen processing  → ECR :processing-latest, :processing-<sha>
 ├── Construye imagen train       → ECR :train-latest, :train-<sha>
-└── (en tags v*) imagen prod     → ECR :prod-latest
+
 ```
 
 Las imágenes se publican en: `421041021233.dkr.ecr.us-east-1.amazonaws.com/practica-ci-cd`
@@ -539,10 +564,15 @@ Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para m�
 
 ## 👤 Autor
 
-**Ivan Hurtado**
+**Braulio Ceballos**
 
-- GitHub: [@ivhuco](https://github.com/ivhuco)
-- Repositorio: [practica_ci_cd](https://github.com/ivhuco/practica_ci_cd)
+- GitHub: [@braulioceb](https://github.com/braulioceb)
+- Repositorio: [practica_ci_cd](https://github.com/braulioceb/practica_ci_cd)
+
+**Sonia Avilés**
+
+- GitHub: [@sonitavaleria86](https://github.com/sonitavaleria86)
+- Repositorio: [practica_ci_cd](https://github.com/sonitavaleria86/practica_ci_cd)
 
 ## 🙏 Agradecimientos
 
