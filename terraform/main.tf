@@ -58,7 +58,7 @@ resource "aws_ecr_lifecycle_policy" "ml_repo_policy" {
 # IAM User para GitHub Actions
 # ─────────────────────────────────────────────
 
-resource "aws_iam_user" "github_actions" {
+resource "aws_iam_user" "github_actions_ecr" {
   name = "github-actions-ecr-${var.ecr_repo_name}"
 
   tags = {
@@ -69,7 +69,7 @@ resource "aws_iam_user" "github_actions" {
 
 resource "aws_iam_user_policy" "ecr_push" {
   name = "ecr-push-policy"
-  user = aws_iam_user.github_actions.name
+  user = aws_iam_user.github_actions_ecr.name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -98,6 +98,6 @@ resource "aws_iam_user_policy" "ecr_push" {
   })
 }
 
-resource "aws_iam_access_key" "github_actions" {
-  user = aws_iam_user.github_actions.name
+resource "aws_iam_access_key" "github_actions_ecr" {
+  user = aws_iam_user.github_actions_ecr.name
 }
