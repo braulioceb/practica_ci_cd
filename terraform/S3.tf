@@ -72,8 +72,7 @@ resource "aws_iam_user_policy" "s3_access" {
           "s3:PutObject",
           "s3:GetObject",
           "s3:DeleteObject",
-          "s3:FullAccess",
-          "sts:GetCallerIdentity"
+          "s3:FullAccess"
         ]
         Resource = "${aws_s3_bucket.app_bucket.arn}/*"
       }
