@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">= 6.28.0, < 7.0.0"
     }
   }
 }
@@ -44,6 +44,7 @@ resource "aws_s3_bucket_public_access_block" "app_bucket_block" {
 
 resource "aws_iam_user" "github_actions" {
   name = "github-actions-s3-${var.bucket_name}"
+
   tags = {
     Project   = "practica-ci-cd"
     ManagedBy = "terraform"
@@ -71,8 +72,7 @@ resource "aws_iam_user_policy" "s3_access" {
         Action = [
           "s3:PutObject",
           "s3:GetObject",
-          "s3:DeleteObject",
-          "s3:FullAccess"
+          "s3:DeleteObject"
         ]
         Resource = "${aws_s3_bucket.app_bucket.arn}/*"
       }
