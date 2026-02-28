@@ -1,6 +1,9 @@
 name: SageMaker Processing Pipeline
 
 on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
   workflow_run:
     workflows: ["Docker Build and Publish to ECR"]
     branches: [main]
@@ -10,8 +13,8 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: practica-ci-cd
-  S3_INPUT: s3://practica_mlops_2026/ejemplo.studio/
-  S3_OUTPUT: s3://practica_mlops_2026/ejemplo.studio/processed/
+  S3_INPUT: s3://practica-smlops-2026/ejemplo-studio/
+  S3_OUTPUT: s3://practica-mlops-2026/ejemplo-studio/processed/
   SAGEMAKER_ROLE_ARN: arn:aws:iam::421041021233:role/sagemaker-execution-practica-ci-cd
 
 jobs:
