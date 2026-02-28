@@ -91,7 +91,7 @@ resource "aws_iam_access_key" "github_actions" {
 # Carpeta: ejemplo.studio/
 resource "aws_s3_object" "folder_ejemplo_studio" {
   bucket  = aws_s3_bucket.app_bucket.id
-  key     = "ejemplo.studio/"
+  key     = "ejemplo-studio/"
   content = ""
 
   depends_on = [aws_s3_bucket.app_bucket]
