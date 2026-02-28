@@ -9,9 +9,9 @@
 #  }
 #}
 
-provider "aws" {
-  region  = var.aws_region
-}
+#provider "aws" {
+#  region  = var.aws_region
+#}
 
 # ─────────────────────────────────────────────
 # S3 Bucket
