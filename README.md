@@ -76,6 +76,9 @@ PR / Push a dev
 
                     🚧 Training Job  ← Ejercicio para alumnos
 ```
+### Diagrama de Arquitecutra CI/CD
+![Arquitectrua CI/CD](docs/diagramas/arquitectura_ci_cd.png)
+
 ### Accuracy Gate (Requisito de la práctica)
 Durante CI se ejecuta el entrenamiento del modelo.
 Si el score usado (validación o cross-validation) es **<0.6**, el script termina con error y el workflow falla
