@@ -95,7 +95,7 @@ def train_model(model_type='random_forest', val_split=0.2, cv_folds=5):
         model_filename = f'titanic_model_{model_type}.pkl'
         save_model(model, model_filename)
     else:
-        print(f"NO VALID val_score:{val_score}")
+        raise ValueError(f"NO VALID val_score:{val_score}")
 
     # Save metrics
     metrics = {

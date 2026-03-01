@@ -12,7 +12,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: practica-ci-cd
-  S3_INPUT: s3://practica-smlops-2026/ejemplo-studio/
+  S3_INPUT: s3://practica-mlops-2026/ejemplo-studio/
   S3_OUTPUT: s3://practica-mlops-2026/ejemplo-studio/processed/
   SAGEMAKER_ROLE_ARN: arn:aws:iam::421041021233:role/sagemaker-execution-practica-ci-cd
 
@@ -32,6 +32,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
