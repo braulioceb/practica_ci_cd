@@ -1,15 +1,15 @@
-name: Terraform S3 - Dev
-
 on:
   pull_request:
-    branches: [dev]
+    branches:
+      - dev
   workflow_dispatch:
   workflow_run:
     workflows: ["CI - Testing and Linting"]
-    branches: [dev]
-    types: [completed]
-  workflow_dispatch:
-
+    branches:
+      - dev
+    types:
+      - completed
+    
 jobs:
   terraform:
     runs-on: ubuntu-latest
