@@ -89,11 +89,14 @@ def train_model(model_type='random_forest', val_split=0.2, cv_folds=5):
         for i, (feature, importance) in enumerate(sorted_features[:10], 1):
             print(f"   {i}. {feature}: {importance:.4f}")
     
-    # Save model
-    print("\n8. Saving model...")
-    model_filename = f'titanic_model_{model_type}.pkl'
-    save_model(model, model_filename)
-    
+    if val_score > 0.6:  
+        # Save model
+        print("\n8. Saving model...")
+        model_filename = f'titanic_model_{model_type}.pkl'
+        save_model(model, model_filename)
+    else:
+        print(f"NO VALID val_score:{val_score}")
+
     # Save metrics
     metrics = {
         'model_type': model_type,

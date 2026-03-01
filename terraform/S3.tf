@@ -86,7 +86,7 @@ resource "aws_s3_object" "folder_ejemplo_studio" {
 # Carpeta: ejemplo.studio/processed/
 resource "aws_s3_object" "folder_processed" {
   bucket  = aws_s3_bucket.app_bucket.id
-  key     = "ejemplo.studio/processed/"
+  key     = "ejemplo-studio/processed/"
   content = ""
 
   depends_on = [aws_s3_bucket.app_bucket]
