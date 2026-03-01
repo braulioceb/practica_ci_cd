@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: ["CI - Testing and Linting"]
+    branches: [dev]
     types: [completed]
   workflow_dispatch:
 
