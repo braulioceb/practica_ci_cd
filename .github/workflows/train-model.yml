@@ -58,28 +58,6 @@ jobs:
       run: |
         MODEL_TYPE="${{ github.event.inputs.model_type || 'random_forest' }}"
         python src/train.py --model $MODEL_TYPE --val-split 0.2 --cv-folds 5
-    
-    - name: Upload trained model
-      uses: actions/upload-artifact@v4
-      with:
-        name: trained-model
-        path: |
-          models/*.pkl
-          reports/training_metrics.json
-        retention-days: 30
-    - name: Upload trained model to S3
-      if: success()
-      uses: jakejarvis/s3-sync-action@v0.5.1
-      with:
-        args: --acl private --exact-timestamps
-        source_dir: models/
-        destination_dir: ejemplo-studio
-      env:
-        AWS_S3_BUCKET: practica-mlops-2026
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-        AWS_REGION: us-east-1
 
     - name: Upload training metrics
       uses: actions/upload-artifact@v4
