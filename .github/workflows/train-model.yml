@@ -70,7 +70,7 @@ jobs:
     
     - name: Upload trained model to S3
       if: success()  # solo si el entrenamiento fue exitoso
-      uses: jakejarvis/s3-sync-action@v0.6.0
+      uses: jakejarvis/s3-sync-action@v0.5.1
       with:
         args: --acl private --exact-timestamps
         source_dir: models/

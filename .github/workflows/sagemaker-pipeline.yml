@@ -14,7 +14,7 @@ env:
   ECR_REPOSITORY: practica-ci-cd
   S3_INPUT: s3://practica-mlops-2026/ejemplo-studio/
   S3_OUTPUT: s3://practica-mlops-2026/ejemplo-studio/processed/
-  SAGEMAKER_ROLE_ARN: arn:aws:iam::421041021233:role/sagemaker-execution-practica-ci-cd
+  SAGEMAKER_ROLE_ARN: arn:aws:iam::518627290192:role/sagemaker-execution-practica-ci-cd
 
 jobs:
   run-processing-job:
