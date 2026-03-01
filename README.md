@@ -62,7 +62,8 @@ Proyecto completo de Machine Learning para predecir la supervivencia de pasajero
 PR / Push a dev
     │
     ├─► CI (ci.yml)                    → flake8 + pytest (Python 3.9, 3.10, 3.11)
-    │
+    ├─► create_S3 (ci.yml)
+    crea bucket S3, repositorio ECR, roles AIM 
     └─► docker-publish.yml
             │  Construye imagen processing  ──► ECR :processing-latest
             │  Construye imagen train       ──► ECR :train-latest
@@ -77,11 +78,17 @@ PR / Push a dev
                     🚧 Training Job  ← Ejercicio para alumnos
 ```
 ### Diagrama de Arquitecutra CI/CD
-![Arquitectrua CI/CD](docs/diagramas/arquitectura_ci_cd.png)
+
+
+![Arquitectura CI/CD](docs/diagramas//arquitectura_ci_cd.jpeg)
+
+Durante el pull request en dev se valida el codigo (pylint + pytest) y se contruye la infraestructura requerida para el ejecutar el codigo (bucket en S3, repositorio en ECR y repositorios adecuados).
+
+Finalmente, en el pull request a main se construyen y empujan las imagenes al ECR, despues se ejecutan los codigos de procesamiento y entrenamiento. 
 
 ### Accuracy Gate (Requisito de la práctica)
 Durante CI se ejecuta el entrenamiento del modelo.
-Si el score usado (validación o cross-validation) es **<0.6**, el script termina con error y el workflow falla
+Si el score usado (validación accuracy) es **<0.6**, el script termina con error y el workflow falla
 Esto garantiza que los modelos con **accuracy >=0.6** pasen a la etapa de despliegue 
 
 ## ☁️ Infraestructura con Terraform
@@ -95,17 +102,19 @@ Toda la infraestructura AWS se gestiona con Terraform en el directorio `terrafor
 | `aws_ecr_repository` | `practica-ci-cd` | Almacena las imágenes Docker |
 | `aws_ecr_lifecycle_policy` | — | Mantiene solo las últimas 10 imágenes |
 | `aws_iam_user` | `github-actions-ecr-practica-ci-cd` | Usuario que usa GitHub Actions para autenticarse |
+| `aws_iam_user` | `github-actions-s3-practica-mlops-2026` | Usuario que usa GitHub Actions para autenticarse |
 | `aws_iam_access_key` | — | Credenciales → secretos de GitHub |
 | `aws_iam_role` | `sagemaker-execution-practica-ci-cd` | Rol que SageMaker asume al correr jobs |
 | `aws_iam_role_policy` | `sagemaker-s3-policy` | Acceso lectura/escritura al bucket S3 |
 | `aws_iam_role_policy` | `sagemaker-ecr-policy` | Pull de imágenes desde ECR |
+| `aws_iam_role_policy` | `s3_access` | Fullacess to S3 |
 
 ### Cómo se conecta Terraform con el pipeline
 
 ```
 Terraform                     GitHub Actions
 ──────────────────────────    ──────────────────────────────────────
-Crea aws_iam_user         →   usa AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+Crea aws_iam_user         →   usa AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN
 Crea aws_ecr_repository   →   docker-publish.yml sube imágenes aquí
 Crea aws_iam_role         →   sagemaker-pipeline.yml pasa el ARN al job
 ```
@@ -231,6 +240,7 @@ practica_ci_cd/
 │
 ├── 📁 .github/workflows/        # GitHub Actions
 │   ├── ci.yml                  # Testing y linting automático
+│   ├── create_S3.yml           # Create infraestructure: S3, ECR and Roles
 │   ├── docker-publish.yml      # Build y push de imágenes a ECR
 │   ├── sagemaker-pipeline.yml  # Lanza SageMaker Processing Job
 │   ├── train-model.yml         # Entrenamiento automático (local)
@@ -239,6 +249,7 @@ practica_ci_cd/
 ├── 📁 terraform/                # Infraestructura como código (IaC)
 │   ├── main.tf                 # ECR repo + IAM user para GitHub Actions
 │   ├── sagemaker_role.tf       # IAM Role para SageMaker + permisos
+│   ├── S3.tf                   # S3 + IAM user for S3
 │   ├── variables.tf            # Variables (región, nombre del repo)
 │   └── outputs.tf              # URLs, ARNs y credenciales
 │
