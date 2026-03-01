@@ -15,3 +15,13 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "bucket_name" {
+  description = "Nombre único global para el bucket S3"
+  type        = string
+  default = "practica-mlops-2026"
+  validation {
+    condition     = length(var.bucket_name) > 3
+    error_message = "El nombre del bucket debe tener más de 3 caracteres."
+  }
+}

@@ -2,13 +2,11 @@ name: Docker Build and Publish to ECR
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     tags:
       - 'v*'
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 env:
