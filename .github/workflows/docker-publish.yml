@@ -45,10 +45,7 @@ jobs:
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      # ── Processing image ──────────────────────────────────────────────────
-      - name: Build and push Processing image
-
-    
+      # ── Processing image ──────────────────────────────────────────────────    
       - name: Build and push Processing image
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
