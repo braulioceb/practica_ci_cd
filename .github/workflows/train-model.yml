@@ -67,21 +67,20 @@ jobs:
           models/*.pkl
           reports/training_metrics.json
         retention-days: 30
-    
     - name: Upload trained model to S3
-      if: success()  # solo si el entrenamiento fue exitoso
+      if: success()
       uses: jakejarvis/s3-sync-action@v0.5.1
       with:
         args: --acl private --exact-timestamps
         source_dir: models/
-        destination_dir: results/ejemplo-studio
-        bucket: practica-mlops-2026
+        destination_dir: ejemplo-studio
       env:
+        AWS_S3_BUCKET: practica-mlops-2026
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS-SESSION-TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         AWS_REGION: us-east-1
-    
+
     - name: Upload training metrics
       uses: actions/upload-artifact@v4
       with:
