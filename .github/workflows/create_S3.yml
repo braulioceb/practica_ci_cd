@@ -3,6 +3,12 @@ name: Terraform S3 - Dev
 on:
   pull_request:
     branches: [dev]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI - Testing and Linting"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
 
 jobs:
   terraform:
@@ -25,7 +31,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.6.2
 
