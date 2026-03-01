@@ -293,6 +293,23 @@ python scripts/download_data.py
 python scripts/run_pipeline.py
 ```
 
+> [!IMPORTANT]
+> **El dataset NO se sube a GitHub durante la ejecución de los pipes de CI/CD**.  
+> Se carga manualmente en **Amazon S3** y los scripts/workflows lo consumen desde allí.
+
+```bash
+### Ubicación del dataset (S3)
+- Bucket: `practica-mlops-2026`
+- folder: `ejemplo-studio`
+### 🔼 Cómo subir el archivo (AWS Console)
+1. Ir a **AWS Console → S3**
+2. Entrar al bucket 
+3. Click en **Cargar**
+# crear el archivo titanic como se descript en  la Opcion 1
+4. Seleccionar `./data/raw/Titanic-Dataset.csv`
+5. Click **Cargar** (Upload)
+```
+
 ### Opción 2: Ejecución Paso a Paso
 
 ```bash
@@ -392,7 +409,6 @@ Las imágenes se publican en: `421041021233.dkr.ecr.us-east-1.amazonaws.com/prac
 │     └── Output: s3://practica.mlops.2026/ejemplo.studio/processed/
 └── Espera que el job complete (~5-10 min)
 ```
-
 [📖 Documentación detallada](docs/ci-cd/WORKFLOW_SAGEMAKER.md)
 
 ---
@@ -523,6 +539,10 @@ El proyecto genera automáticamente:
 - **AWS SageMaker** - Processing Jobs en la nube
 - **AWS IAM** - Gestión de permisos
 - **boto3** - SDK de AWS para Python
+
+## 💻 CI/CD Flujo
+
+La creacion de los lint, pytest, buckets S3, ECR y Roles AIM se ejecutan durante el pull request a dev. Mientras que el preprocessing, train y el build y push de las imagenes se hacen con un push a main.
 
 ### Otros
 
